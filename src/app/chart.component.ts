@@ -8,7 +8,7 @@ import { Component } from '@angular/core';
     }
   `],
   template: `
-    <p>bitch</p>
+    <p>nothing</p>
   `
 })
 export class AppComponent {

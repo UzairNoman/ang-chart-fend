@@ -1,4 +1,4 @@
-import { Component,OnInit } from '@angular/core';
+import { Component,OnInit} from '@angular/core';
 import { ChartService } from './chart.service';
 import { Chart } from './chart';
 import { Http,Response,Headers,RequestOptions } from '@angular/http';
@@ -43,11 +43,7 @@ export class AppComponent implements OnInit {
   { Date: '13/6/2017', Type: 'conversion', Values: '45' },
   { Date: '26/5/2017', Type: 'conversion', Values: '12' } ];
 
-  private dataManipulated = [
-    {
-      name : 'clickthrough',
-      data : [1,2,2,62,81]
-  }];
+  public dataManipulated : Array<Object> = [];
   // {
   //     name : 'visit',
   //     data : [2,1,3,5,6]
@@ -56,50 +52,79 @@ export class AppComponent implements OnInit {
   //     data : [1,2,4,12,3,45,12]
   //   }
   //   ];
-
+  public visitVals : Array<number> = [];
+  public visitDates : Array<Date> = [];
+  public ctVals : Array<number> = [];
+  public ctDates : Array<Date> = [];
+  public conVals : Array<number> = [];
+  public conDates : Array<Date> = [];
   charts : Chart[];
   errorMessage: string;
    name : any;
    clickMessage = '';
    constructor (private http:Http, private chartService : ChartService){
-    
+
    }
    chartOpt(filter : string){
+     if( filter  == 'visit'){
+       this.dataManipulated = [
+        {
+          name : 'Visit',
+          data : this.visitVals
+      }];
+      this.renderChart();
+      
+     }
+     if( filter  == 'clickthrough'){
+       this.dataManipulated = [
+        {
+          name : 'Clickthrough',
+          data : this.ctVals
+      }];
+      this.renderChart();
+     }
+     if( filter  == 'conversion'){
+       this.dataManipulated = [
+        {
+          name : 'Conversion',
+          data : this.conVals
+      }];
+      this.renderChart();
+     }
      console.log(filter);
    }
+   transformData(data : Chart[]){
+      for(var i = 0; i < data.length; i++){
+                if (data[i].Type == 'visit'){
+                    this.visitVals.push(Number(data[i].Values));
+                    this.visitDates.push(data[i].Date);
+                }
+                if (data[i].Type == 'clickthrough'){
+                    this.ctVals.push(Number(data[i].Values));
+                    this.ctDates.push(data[i].Date);
+                }
+                if (data[i].Type == 'conversion'){
+                    this.conVals.push(Number(data[i].Values));
+                    this.conDates.push(data[i].Date);
+                }
+              
+            }
+    }
    wow(){
-     var visitVals = [];
-     var visitDates = [];
-     var ctVals = [];
-     var ctDates = [];
-     var conVals = [];
-     var conDates = [];
+     
      //console.log(this.data1.length);
-        for(var i = 0; i < this.charts.length; i++){
-          if (this.charts[i].Type == 'visit'){
-              visitVals.push(this.charts[i].Values);
-              visitDates.push(this.charts[i].Date);
-          }
-          if (this.charts[i].Type == 'clickthrough'){
-              ctVals.push(this.charts[i].Values);
-              ctDates.push(this.charts[i].Date);
-          }
-          if (this.charts[i].Type == 'conversion'){
-              conVals.push(this.charts[i].Values);
-              conDates.push(this.charts[i].Date);
-          }
         
-      }
-      console.log(visitVals);
+      console.log(this.visitVals,this.visitDates);
        console.log(this.charts);
        console.log(this.charts[0].Type);
    }
    ngOnInit(){
 
    }
-   ngAfterViewInit() {
-        this.renderChart();
-    }
+  //  ngAfterViewInit() {
+  //       this.renderChart();
+  //   }
+
     renderChart(){
     	jQuery('#container').highcharts({
 	        chart: {
@@ -112,25 +137,26 @@ export class AppComponent implements OnInit {
             text: 'Source: WorldClimate.com'
         },
         xAxis: {
-            categories: [
-                '12/5',
-         //       '12/6',
-                '13/5',
-                // '5/5',
-                 '16/5',
-                // '21/5',
-                // '23/6',
-                '12/7',
-                // '24/5',
-                // '4/6',
-                // '12/7',
-                // '11/5',
-                '7/6',
-                // '26/7',
-                // '1/5',
-                // '13/6',
-                // '26/5'
-            ],
+            categories: this.ctDates,
+        //      [
+        //         '12/5',
+        //  //       '12/6',
+        //         '13/5',
+        //         // '5/5',
+        //          '16/5',
+        //         // '21/5',
+        //         // '23/6',
+        //         '12/7',
+        //         // '24/5',
+        //         // '4/6',
+        //         // '12/7',
+        //         // '11/5',
+        //         '7/6',
+        //         // '26/7',
+        //         // '1/5',
+        //         // '13/6',
+        //         // '26/5'
+        //     ],
             crosshair: true
         },
         yAxis: {
@@ -167,7 +193,6 @@ export class AppComponent implements OnInit {
     let file: File = fileList[0];
     let formData:FormData = new FormData();
     formData.append('myfile', file, file.name);
-    console.log(formData);
    // let headers = new Headers();
     //    headers.append('Content-Type', 'multipart/form-data');
     //      headers.append('Accept', 'application/json');
@@ -175,9 +200,23 @@ export class AppComponent implements OnInit {
             this.http.post('http://localhost:3000/csv', formData)
                 .map(res => res.json())
                 .subscribe(
-                    data => this.charts = data,
+                    data => [
+                      this.charts = data,this.transformData(data),
+                      this.dataManipulated = [
+                        {
+                          name : 'clickthrough',
+                          data : this.ctVals
+                      }],
+                      console.log(this.ctVals,[1,2,34,4],this.ctDates,this.dataManipulated),
+
+                      this.renderChart()
+                      
+                      
+                      ],
                     error => console.log(error)
                 );
+
+
 }
    onClickMe(event : any ) {
      console.log(event.target);
