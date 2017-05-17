@@ -10,49 +10,38 @@ declare var jQuery:any;
   selector: 'my-app',
   providers : [ChartService],
   template: `
-<form  enctype="multipart/form-data" method="post" >
-<input type="file" name="myfile"(change)="changeListener($event)" >Upload
-</form>
-<select (change) = "chartOpt(filter)" [(ngModel)]="filter">
-  <option value="clickthrough">Clickthrough</option>
-  <option value="visit">Visit</option>
-  <option value="conversion">Conversion</option>
-</select>
-<button (click) = "wow()">Googgle</button>
-<div style="width:60%" id="container1"></div>
-<div style="width:60%" id="container2"></div>
-<div style="width:60%" id="container3"></div>
-  `
+<div class="container">
+  <div class="row">
+    <div class="col-md-8">
+    <h2>Chart Maker from CSV</h2>
+      <form enctype="multipart/form-data" method="post"  >
+        <div class="file-group">
+          <label>File</label>
+          <input type="file" name="myfile"(change)="changeListener($event)" >
+        </div>     
+      </form>
+    <div *ngIf="fileUpload">  
+      <label>Select Type</label>
+      <select class="form-control" (change) = "chartOpt(filter)" [(ngModel)]="filter">
+        <option [selected]="1 == 1" [ngValue]="clickthrough">Clickthrough</option>
+        <option [ngValue]="visit">Visit</option>
+        <option [ngValue]="conversion">Conversion</option>
+      </select>
+    </div>  
+    </div>
+    <div class="col-md-8">
+      <div id="container1"></div>
+      <div id="container2"></div>
+      <div id="container3"></div>
+    </div>
+  </div>  
+</div>  
+`
   ,
 })
-export class AppComponent implements OnInit {
-  private data2 = [ { Date: '12/5/2017', Type: 'clickthrough', Values: '1' },
-  { Date: '12/6/2017', Type: 'visit', Values: '2' },
-  { Date: '13/5/2017', Type: 'clickthrough', Values: '2' },
-  { Date: '5/5/2017', Type: 'visit', Values: '1' },
-  { Date: '16/5/2017', Type: 'clickthrough', Values: '2' },
-  { Date: '21/5/2017', Type: 'visit', Values: '3' },
-  { Date: '23/6/2017', Type: 'visit', Values: '5' },
-  { Date: '12/7/2017', Type: 'clickthrough', Values: '62' },
-  { Date: '24/5/2017', Type: 'conversion', Values: '1' },
-  { Date: '4/6/2017', Type: 'conversion', Values: '2' },
-  { Date: '12/7/2017', Type: 'conversion', Values: '4' },
-  { Date: '11/5/2017', Type: 'visit', Values: '6' },
-  { Date: '7/6/2017', Type: 'clickthrough', Values: '81' },
-  { Date: '26/7/2017', Type: 'conversion', Values: '12' },
-  { Date: '1/5/2017', Type: 'conversion', Values: '3' },
-  { Date: '13/6/2017', Type: 'conversion', Values: '45' },
-  { Date: '26/5/2017', Type: 'conversion', Values: '12' } ];
-
+export class AppComponent {
+  public fileUpload : boolean = false;
   public dataManipulated : Array<Object> = [];
-  // {
-  //     name : 'visit',
-  //     data : [2,1,3,5,6]
-  //   },{
-  //     name : 'conversion',
-  //     data : [1,2,4,12,3,45,12]
-  //   }
-  //   ];
   public visitVals : Array<number> = [];
   public visitDates : Array<Date> = [];
   public ctVals : Array<number> = [];
@@ -60,13 +49,13 @@ export class AppComponent implements OnInit {
   public conVals : Array<number> = [];
   public conDates : Array<Date> = [];
   charts : Chart[];
+  public selectedFilter : string = 'clickthrough';
   errorMessage: string;
-   name : any;
-   clickMessage = '';
-   constructor (private http:Http, private chartService : ChartService){
 
-   }
+   constructor (private http:Http, private chartService : ChartService){}
+
    chartOpt(filter : string){
+     this.selectedFilter = filter;
      if( filter  == 'visit'){
        this.dataManipulated = [
         {
@@ -74,7 +63,7 @@ export class AppComponent implements OnInit {
           data : this.visitVals
       }];
       this.renderChart("#container1",'line');
-      this.renderChart("#container2",'pie');
+      this.renderPieChart("#container2",'pie');
       this.renderChart("#container3",'column');
       
      }
@@ -85,7 +74,7 @@ export class AppComponent implements OnInit {
           data : this.ctVals
       }];
       this.renderChart("#container1",'line');
-      this.renderChart("#container2",'pie');
+      this.renderPieChart("#container2",'pie');
       this.renderChart("#container3",'column');
      }
      if( filter  == 'conversion'){
@@ -95,10 +84,10 @@ export class AppComponent implements OnInit {
           data : this.conVals
       }];
       this.renderChart("#container1",'line');
-      this.renderChart("#container2",'pie');
+      this.renderPieChart("#container2",'pie');
       this.renderChart("#container3",'column');
      }
-     console.log(filter);
+     console.log(filter);     
    }
    transformData(data : Chart[]){
       for(var i = 0; i < data.length; i++){
@@ -115,25 +104,68 @@ export class AppComponent implements OnInit {
                     this.conDates.push(data[i].Date);
                 }
               
-            }
+        }
     }
-   wow(){
-     
-     //console.log(this.data1.length);
-        
-      console.log(this.visitVals,this.visitDates);
-       console.log(this.charts);
-       console.log(this.charts[0].Type);
-   }
-   ngOnInit(){
-
-   }
-  //  ngAfterViewInit() {
-  //       this.renderChart();
-  //   }
-
+    transformPieData(data : Chart[],filter : string): Array<Object>{
+      let selectedLength : number;
+      let pieDataManipulated : Array<Object> = [];
+      if(filter == "clickthrough"){
+          selectedLength = this.ctDates.length;
+          for(var i = 0; i < selectedLength; i++){
+           pieDataManipulated.push({"name" : this.ctDates[i],"y" : this.ctVals[i]});          
+          }
+      }
+      if(filter == "visit"){
+          selectedLength = this.visitDates.length;
+          for(var i = 0; i < selectedLength; i++){
+           pieDataManipulated.push({"name" : this.visitDates[i],"y" : this.visitVals[i]});          
+          }
+      }
+      if(filter == "conversion"){
+          selectedLength = this.conDates.length;
+          for(var i = 0; i < selectedLength; i++){
+           pieDataManipulated.push({"name" : this.conDates[i],"y" : this.conVals[i]});          
+          }
+      }
+      console.log(pieDataManipulated);
+      return pieDataManipulated;
+    }
+    renderPieChart(container : string, chartType : string ){
+      console.log("Current selection is " + this.selectedFilter);
+      var seriesData : Array<Object>;
+      seriesData = this.transformPieData(this.charts,this.selectedFilter);
+      
+    	jQuery(container).highcharts({
+	        chart: {
+            plotBackgroundColor: null,
+            plotBorderWidth: null,
+            plotShadow: false,
+            type: chartType
+        },
+        title: {
+            text: 'User App Usage'
+        },
+        tooltip: {
+            pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+        },
+        plotOptions: {
+            pie: {
+                allowPointSelect: true,
+                cursor: 'pointer',
+                dataLabels: {
+                    enabled: false
+                },
+                showInLegend: true
+            }
+        },
+        series: [{
+            name: this.selectedFilter,
+            colorByPoint: true,
+            data: seriesData
+        }]
+	    });
+    }
     renderChart(container : string ,chartType : string ){
-      console.log(container,chartType);
     	jQuery(container).highcharts({
 	        chart: {
         type: chartType
@@ -155,8 +187,7 @@ export class AppComponent implements OnInit {
             }
         },
 	        tooltip: {
-	            pointFormat: '{series.name} produced <b>{point.y:,.0f}</b>' +
-	            			 '<br/>warheads in {point.x}'
+	            pointFormat: '{series.name} produced <b>{point.y:,.0f}</b>'
 	        },
 	        plotOptions: {
 	            area: {
@@ -177,70 +208,29 @@ export class AppComponent implements OnInit {
 	    });
     }
    changeListener($event : any ): void {
-
+    this.fileUpload = true;
+    console.log(this.fileUpload);
     let fileList: FileList = $event.target.files;
     let file: File = fileList[0];
     let formData:FormData = new FormData();
     formData.append('myfile', file, file.name);
-   // let headers = new Headers();
-    //    headers.append('Content-Type', 'multipart/form-data');
-    //      headers.append('Accept', 'application/json');
-         // let options = new RequestOptions({ headers: headers });
             this.http.post('http://localhost:3000/csv', formData)
                 .map(res => res.json())
                 .subscribe(
                     data => [
-                      this.charts = data,this.transformData(data),
+                      this.charts = data,
+                      this.transformData(data),
                       this.dataManipulated = [
                         {
                           name : 'clickthrough',
                           data : this.ctVals
                       }],
                       console.log(this.ctVals,[1,2,34,4],this.ctDates,this.dataManipulated),
-
                       this.renderChart("#container1",'line'),
-                      this.renderChart("#container2",'pie'),
-                      this.renderChart("#container3",'column'),
-                      
-                      
+                      this.renderPieChart("#container2",'pie'),
+                      this.renderChart("#container3",'column'),            
                       ],
                     error => console.log(error)
                 );
-
-
-}
-   onClickMe(event : any ) {
-     console.log(event.target);
-     let fileList: FileList = event.target.files;
-     let formData : FormData = new FormData();
-    
-
-    
-
-        // let formData = new FormData();
-        // formData.append("file", file, file.name);
-
-    // if(fileList.length > 0) {
-    //     let file: File = fileList[0];
-    //     let formData:FormData = new FormData();
-    //     formData.append('myfile', file, file.name);
-    //     let headers = new Headers();
-    //     headers.append('Content-Type', 'multipart/form-data');
-    //     headers.append('Accept', 'application/json');
-    //     let options = new RequestOptions({ headers: headers });
-    //     console.log(formData);
-    //     this.http.post('http://localhost:3000/csv', formData, options)
-    //         .map(res => res.json())
-    //         .subscribe(
-    //             data => console.log('success'),
-    //             error => console.log(error)
-    //         )
-    // }
-    //  this.chartService.getData(evt).subscribe(
-    //   charts => console.log(charts),
-    //   error => this.errorMessage = <any>error
-    // )
-  } 
-
-
+    } 
 }
