@@ -19,8 +19,9 @@ declare var jQuery:any;
   <option value="conversion">Conversion</option>
 </select>
 <button (click) = "wow()">Googgle</button>
-<div style="width:60%" id="container"></div>
-
+<div style="width:60%" id="container1"></div>
+<div style="width:60%" id="container2"></div>
+<div style="width:60%" id="container3"></div>
   `
   ,
 })
@@ -72,7 +73,9 @@ export class AppComponent implements OnInit {
           name : 'Visit',
           data : this.visitVals
       }];
-      this.renderChart();
+      this.renderChart("#container1",'line');
+      this.renderChart("#container2",'pie');
+      this.renderChart("#container3",'column');
       
      }
      if( filter  == 'clickthrough'){
@@ -81,7 +84,9 @@ export class AppComponent implements OnInit {
           name : 'Clickthrough',
           data : this.ctVals
       }];
-      this.renderChart();
+      this.renderChart("#container1",'line');
+      this.renderChart("#container2",'pie');
+      this.renderChart("#container3",'column');
      }
      if( filter  == 'conversion'){
        this.dataManipulated = [
@@ -89,7 +94,9 @@ export class AppComponent implements OnInit {
           name : 'Conversion',
           data : this.conVals
       }];
-      this.renderChart();
+      this.renderChart("#container1",'line');
+      this.renderChart("#container2",'pie');
+      this.renderChart("#container3",'column');
      }
      console.log(filter);
    }
@@ -125,38 +132,20 @@ export class AppComponent implements OnInit {
   //       this.renderChart();
   //   }
 
-    renderChart(){
-    	jQuery('#container').highcharts({
+    renderChart(container : string ,chartType : string ){
+      console.log(container,chartType);
+    	jQuery(container).highcharts({
 	        chart: {
-        type: 'column'
+        type: chartType
         },
         title: {
-            text: 'Monthly Average Rainfall'
+            text: 'User App Usage'
         },
         subtitle: {
-            text: 'Source: WorldClimate.com'
+            text: 'Vortech Innovations'
         },
         xAxis: {
             categories: this.ctDates,
-        //      [
-        //         '12/5',
-        //  //       '12/6',
-        //         '13/5',
-        //         // '5/5',
-        //          '16/5',
-        //         // '21/5',
-        //         // '23/6',
-        //         '12/7',
-        //         // '24/5',
-        //         // '4/6',
-        //         // '12/7',
-        //         // '11/5',
-        //         '7/6',
-        //         // '26/7',
-        //         // '1/5',
-        //         // '13/6',
-        //         // '26/5'
-        //     ],
             crosshair: true
         },
         yAxis: {
@@ -209,7 +198,9 @@ export class AppComponent implements OnInit {
                       }],
                       console.log(this.ctVals,[1,2,34,4],this.ctDates,this.dataManipulated),
 
-                      this.renderChart()
+                      this.renderChart("#container1",'line'),
+                      this.renderChart("#container2",'pie'),
+                      this.renderChart("#container3",'column'),
                       
                       
                       ],
